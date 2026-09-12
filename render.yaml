@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: guardian-familiar-cos
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DATA_DIR
+        value: /data
+    disk:
+      name: cos-data
+      mountPath: /data
+      sizeGB: 1

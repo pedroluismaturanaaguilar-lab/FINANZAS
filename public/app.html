@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GUARDIÁN FAMILIAR COS · Control Laboral</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="app-body">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">🛡️ COS <span>v3</span></div>
+    <nav class="sidebar-nav">
+      <button class="active" data-section="dashboard"><span class="icon">📊</span> Dashboard</button>
+      <button data-section="workers"><span class="icon">👤</span> Trabajadores</button>
+      <button data-section="attendance"><span class="icon">📋</span> Asistencia</button>
+      <button data-section="payroll"><span class="icon">💰</span> Nómina</button>
+      <button data-section="settlement"><span class="icon">⚖️</span> Liquidación</button>
+      <button data-section="holidays"><span class="icon">📅</span> Festivos</button>
+      <button data-section="wagehistory"><span class="icon">💲</span> Historial salarial</button>
+      <button data-section="settings"><span class="icon">⚙️</span> Parámetros</button>
+      <button data-section="manual"><span class="icon">📖</span> Manual de uso</button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="theme-toggle" id="themeToggle">🌙 Modo oscuro</button>
+      <button class="logout-btn" id="logoutBtn">🚪 Salir</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="main-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="hamburger" id="hamburgerOpen">☰</button>
+        <button class="btn btn-ghost btn-sm" id="backBtn" title="Volver a la sección anterior">◀ Atrás</button>
+        <h1 id="pageTitle">Dashboard <span class="subtitle">COS · Control Laboral</span></h1>
+      </div>
+      <div class="header-actions">
+        <span id="clockDisplay" style="font-size:13px;color:var(--text-light);"></span>
+        <span style="opacity:0.3;">|</span>
+        <span id="workerCount" style="font-size:13px;color:var(--text-light);">0 trabajadores</span>
+        <span style="opacity:0.3;">|</span>
+        <span id="sessionUser" style="font-size:13px;color:var(--text-light);"></span>
+      </div>
+    </header>
+
+    <div class="main-body">
+
+      <!-- DASHBOARD -->
+      <section class="section active" id="section-dashboard">
+        <div class="stats-grid" id="dashboardStats">
+          <div class="stat-item"><span class="number" id="statWorkers">0</span><span class="label">Trabajadores</span></div>
+          <div class="stat-item"><span class="number" id="statActive">0</span><span class="label">Activos</span></div>
+          <div class="stat-item"><span class="number" id="statToday">0</span><span class="label">Asistencias hoy</span></div>
+          <div class="stat-item"><span class="number" id="statPayroll">$0</span><span class="label">Última nómina</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>📅 Calendario laboral</h2>
+            <div class="calendar-nav">
+              <button id="calPrev">◀</button>
+              <span class="month-year" id="calMonthYear"></span>
+              <button id="calNext">▶</button>
+            </div>
+          </div>
+          <div id="calendarContainer"></div>
+          <div style="margin-top:8px;font-size:13px;color:var(--text-light);display:flex;gap:16px;flex-wrap:wrap;">
+            <span style="background:#d5f5e3;padding:0 6px;border-radius:4px;">🟩 Normal</span>
+            <span style="background:#fadbd8;padding:0 6px;border-radius:4px;">🟥 Domingo</span>
+            <span style="background:#fcf3cf;padding:0 6px;border-radius:4px;">🟨 Festivo</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>📊 Acumulado por trabajador (período actual)</h2>
+            <button class="btn btn-success btn-sm" id="btnPayAll">💵 Pagar quincena a todos</button>
+          </div>
+          <div id="accumulatedSummary"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h2>📌 Actividad reciente</h2></div>
+          <div id="dashboardActivity" style="min-height:40px;"></div>
+        </div>
+      </section>
+
+      <!-- WORKERS -->
+      <section class="section" id="section-workers">
+        <div class="card">
+          <div class="card-header">
+            <h2>👤 Trabajadores</h2>
+            <button class="btn btn-primary" id="btnAddWorker">+ Nuevo</button>
+          </div>
+          <div id="workerList"></div>
+        </div>
+      </section>
+
+      <!-- ATTENDANCE -->
+      <section class="section" id="section-attendance">
+        <div class="card">
+          <div class="card-header">
+            <h2>📋 Control de asistencia</h2>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="date" id="attendanceDate" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-page);color:var(--text-primary);font-family:var(--font);">
+              <button class="btn btn-primary btn-sm" id="btnLoadAttendance">Cargar</button>
+              <button class="btn btn-success btn-sm" id="btnAddAttendance">+ Registrar</button>
+            </div>
+          </div>
+          <div id="attendanceList"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2>⚡ Acciones rápidas (hoy)</h2>
+            <button class="btn btn-outline btn-sm" id="btnAbsence">📌 Registrar ausencia</button>
+          </div>
+          <div id="quickAttendance"></div>
+        </div>
+      </section>
+
+      <!-- PAYROLL -->
+      <section class="section" id="section-payroll">
+        <div class="card">
+          <div class="card-header">
+            <h2>💰 Historial de nóminas</h2>
+            <button class="btn btn-outline btn-sm" id="btnRefreshPayroll">↻ Actualizar</button>
+          </div>
+          <div class="manual" style="margin-bottom:12px;">
+            <p class="tip">💡 Las horas extra se pagan en <strong>quincena vencida</strong>: las horas extra trabajadas en un período se pagan junto con la nómina del período siguiente. El sueldo base, el auxilio de transporte y el recargo dominical/festivo sí se pagan de inmediato.</p>
+          </div>
+          <div id="payrollList"></div>
+        </div>
+      </section>
+
+      <!-- SETTLEMENT -->
+      <section class="section" id="section-settlement">
+        <div class="card">
+          <div class="card-header">
+            <h2>⚖️ Liquidación de trabajadores</h2>
+            <button class="btn btn-primary btn-sm" id="btnNewSettlement">+ Nueva liquidación</button>
+          </div>
+          <p class="tip" style="margin-bottom:12px;">💡 La liquidación calcula cada tramo del contrato con el salario mínimo, auxilio de transporte y recargos que estaban vigentes en cada fecha (ver Historial salarial), no solo con el valor actual.</p>
+          <div id="settlementList"></div>
+        </div>
+      </section>
+
+      <!-- HOLIDAYS -->
+      <section class="section" id="section-holidays">
+        <div class="card">
+          <div class="card-header">
+            <h2>📅 Festivos</h2>
+            <button class="btn btn-primary btn-sm" id="btnAddHoliday">+ Agregar festivo</button>
+          </div>
+          <div id="holidayList"></div>
+        </div>
+      </section>
+
+      <!-- WAGE HISTORY -->
+      <section class="section" id="section-wagehistory">
+        <div class="card">
+          <div class="card-header">
+            <h2>💲 Historial salarial</h2>
+            <button class="btn btn-primary btn-sm" id="btnAddWagePeriod">+ Nuevo período</button>
+          </div>
+          <p class="tip">💡 Cada período define el salario, auxilio de transporte, jornada y recargos vigentes durante ese rango de fechas. El sistema usa automáticamente el período correcto según la fecha de cada asistencia o liquidación. El período marcado como <strong>VIGENTE</strong> (sin fecha final) es el que se usa para hoy.</p>
+          <div id="wageHistoryList"></div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="section" id="section-settings">
+        <div class="card">
+          <div class="card-header"><h2>⚙️ Reglas internas</h2></div>
+          <form id="settingsForm" class="form-grid">
+            <div class="form-group"><label>Jornada diaria antes de hora extra (horas)</label><input type="number" id="cfgDailyHours" step="0.5" required></div>
+            <div class="form-group"><label>Salud (%)</label><input type="number" id="cfgHealth" step="0.1" required></div>
+            <div class="form-group"><label>Pensión (%)</label><input type="number" id="cfgPension" step="0.1" required></div>
+            <div class="form-actions" style="grid-column:1/-1;">
+              <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+          </form>
+          <p class="tip" style="margin-top:10px;">💡 El salario, el auxilio de transporte, la jornada semanal y los recargos se editan en <strong>Historial salarial</strong>, no aquí.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h2>🔒 Seguridad · Cambiar contraseña</h2></div>
+          <form id="passwordForm" class="form-grid">
+            <div class="form-group"><label>Contraseña actual</label><input type="password" id="pwOld" required></div>
+            <div class="form-group"><label>Contraseña nueva</label><input type="password" id="pwNew" required minlength="4"></div>
+            <div class="form-group"><label>Confirmar contraseña nueva</label><input type="password" id="pwNew2" required minlength="4"></div>
+            <div class="form-actions" style="grid-column:1/-1;">
+              <button type="submit" class="btn btn-primary">Actualizar contraseña</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- MANUAL -->
+      <section class="section" id="section-manual">
+        <div class="card manual" id="manualContent"></div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Título</h3>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

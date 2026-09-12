@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GUARDIÁN FAMILIAR COS · Ingreso</title>
+<link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="login-body">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand">🛡️ GUARDIÁN FAMILIAR COS</div>
+      <p class="login-sub">Control Laboral · Ingreso</p>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Usuario</label>
+          <input id="loginUser" type="text" autocomplete="username" required autofocus>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input id="loginPass" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit" id="loginBtn">Ingresar</button>
+        <p id="loginError" class="login-error"></p>
+      </form>
+      <p class="login-hint">Usuario y contraseña por defecto: <strong>ADMIN</strong> / <strong>ADMIN123</strong><br>(puedes cambiarla luego en Parámetros → Seguridad)</p>
+    </div>
+  </div>
+
+  <script>
+    // Si ya hay sesión activa, saltar directo a la app.
+    fetch('/api/session').then(r => r.json()).then(s => {
+      if (s.authenticated) location.href = '/app.html';
+    }).catch(() => {});
+
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const username = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value;
+      const errorEl = document.getElementById('loginError');
+      const btn = document.getElementById('loginBtn');
+      errorEl.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Ingresando...';
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          errorEl.textContent = data.error || 'No se pudo ingresar';
+          btn.disabled = false;
+          btn.textContent = 'Ingresar';
+          return;
+        }
+        location.href = '/app.html';
+      } catch (err) {
+        errorEl.textContent = 'No se pudo conectar con el servidor. Intenta de nuevo.';
+        btn.disabled = false;
+        btn.textContent = 'Ingresar';
+      }
+    });
+  </script>
+</body>
+</html>
